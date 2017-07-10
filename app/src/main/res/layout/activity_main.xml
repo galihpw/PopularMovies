@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-xmlns:android="http://schemas.android.com/apk/res/android"
-android:layout_width="match_parent"
-android:layout_height="match_parent">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimaryDark">
 
     <TextView
         android:id="@+id/noInternet"
@@ -12,6 +12,7 @@ android:layout_height="match_parent">
         android:layout_centerVertical="true"
         android:fontFamily="serif"
         android:text="@string/no_internet_connection"
+        android:textColor="@android:color/white"
         android:textSize="18sp"
         android:visibility="invisible" />
 

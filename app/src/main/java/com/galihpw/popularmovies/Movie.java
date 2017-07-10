@@ -1,34 +1,51 @@
 package com.galihpw.popularmovies;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * Created by GalihPW on 10/07/2017.
  */
 
-public class Movie{
+public class Movie implements Parcelable{
 
-    private String mId;
+    private long mId;
     private String mTitle;
     private String mImage;
-    private String mSynopsis;
-    private String mUserRating;
+    private String mSinopsis;
+    private float mUserRating;
     private String mReleaseDate;
     private String mImageBackdrop;
 
-    public Movie(String mId, String mTitle, String mImage, String mSynopsis, String mUserRating, String mReleaseDate, String mImageBackdrop) {
-        this.mId = mId;
-        this.mTitle = mTitle;
-        this.mImage = mImage;
-        this.mSynopsis = mSynopsis;
-        this.mUserRating = mUserRating;
-        this.mReleaseDate = mReleaseDate;
-        this.mImageBackdrop = mImageBackdrop;
+    public Movie(JSONObject object) throws JSONException {
+        mId = JsonHelper.getLongJson(object, "id");
+        mTitle = JsonHelper.getStringJson(object, "original_title");
+        mImage = JsonHelper.getStringJson(object, "poster_path");
+        mSinopsis = JsonHelper.getStringJson(object, "overview");
+        mReleaseDate = JsonHelper.getStringJson(object, "release_date");
+        mUserRating = JsonHelper.getFloatJson(object, "vote_average");
+        mImageBackdrop= JsonHelper.getStringJson(object, "backdrop_path");
     }
 
-    public String getId() {
+    public Movie(Parcel in) {
+        mId = in.readLong();
+        mTitle = in.readString();
+        mImage = in.readString();
+        mSinopsis = in.readString();
+        mUserRating = in.readFloat();
+        mReleaseDate = in.readString();
+        mImageBackdrop = in.readString();
+    }
+
+
+    public long getId() {
         return mId;
     }
 
-    public void setId(String id) {
+    public void setId(long id) {
         this.mId = id;
     }
 
@@ -49,18 +66,18 @@ public class Movie{
     }
 
     public String getSinopsis() {
-        return mSynopsis;
+        return mSinopsis;
     }
 
     public void setSinopsis(String sinopsis) {
-        mSynopsis = sinopsis;
+        mSinopsis = sinopsis;
     }
 
-    public String getUserRating() {
+    public float getUserRating() {
         return mUserRating;
     }
 
-    public void setUserRating(String userRating) {
+    public void setUserRating(float userRating) {
         mUserRating = userRating;
     }
 
@@ -79,4 +96,32 @@ public class Movie{
     public void setImageBackdrop(String imageBackdrop) {
         mImageBackdrop = imageBackdrop;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeLong(mId);
+        parcel.writeString(mTitle);
+        parcel.writeString(mImage);
+        parcel.writeString(mSinopsis);
+        parcel.writeFloat(mUserRating);
+        parcel.writeString(mReleaseDate);
+        parcel.writeString(mImageBackdrop);
+    }
+
+    public static final Parcelable.Creator<Movie> CREATOR = new Creator<Movie>() {
+        @Override
+        public Movie createFromParcel(Parcel in) {
+            return new Movie(in);
+        }
+
+        @Override
+        public Movie[] newArray(int size) {
+            return new Movie[size];
+        }
+    };
 }

@@ -1,6 +1,7 @@
 package com.galihpw.popularmovies.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -65,6 +66,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MyViewHolder
             super(itemView);
             movieImage = (ImageView) itemView.findViewById(R.id.moviePoster);
             movieTitle = (TextView) itemView.findViewById(R.id.movieTitle);
+            movieTitle.setTextColor(Color.WHITE);
             itemView.setOnClickListener(this);
         }
 

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -16,7 +17,6 @@ import android.widget.TextView;
 
 import com.galihpw.popularmovies.adapter.MovieAdapter;
 import com.galihpw.popularmovies.config.Constant;
-import com.galihpw.popularmovies.Movie;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,6 +42,11 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
         setContentView(R.layout.activity_main);
 
         mMovieList = new ArrayList<Movie>();
+
+        if(savedInstanceState != null && savedInstanceState.containsKey("movie")){
+            mMovieList = savedInstanceState.getParcelableArrayList("movie");
+        }
+
         noInternet = (TextView) findViewById(R.id.noInternet);
         mLoadingList = (ProgressBar) findViewById(R.id.loadingListMovie);
         mRecyclerView = (RecyclerView) findViewById(R.id.movieRecycle);
@@ -50,9 +55,9 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(MainActivity.this, 2);
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.addItemDecoration(new CustomItemOffset(MainActivity.this, R.dimen.margin_item));
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(mAdapter);
-
-        new MovieDBQueryTask().execute();
     }
 
     @Override
@@ -66,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.refresh:
-                //tulis
+                new MovieDBQueryTask().execute();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -75,7 +80,23 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
 
     @Override
     public void onRecyclerViewItemClicked(int position) {
+        Intent intent = new Intent(MainActivity.this, DetailActivity.class);
+        intent.putExtra("movie", mMovieList.get(position));
+        startActivity(intent);
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        new MovieDBQueryTask().execute();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if(mMovieList != null){
+            outState.putParcelableArrayList("movie", mMovieList);
+        }
     }
 
     public class MovieDBQueryTask extends AsyncTask<Void, Void, String> {
@@ -125,13 +146,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
 
         private void showJSON(String response) {
             try {
-                JSONArray result = new JSONArray(response);
+                JSONObject object = new JSONObject(response);
+                JSONArray result = object.getJSONArray("results");
                 mMovieList.clear();
                 mAdapter.notifyDataSetChanged();
                 // Parsing json
                 for (int i = 0; i < result.length(); i++) {
-                    JSONObject Data = result.getJSONObject(i);
-                    Movie movie = new Movie("" + Data.getLong(Constant.KEY_ID), "" + Data.getString(Constant.KEY_TITLE), "" + Data.getString(Constant.KEY_IMAGE), "" + Data.getString(Constant.KEY_SYNOPSIS), "" + Data.getDouble(Constant.KEY_USER_RATING), "" + Data.getString(Constant.KEY_RELEASE_DATE), "" + Data.getString(Constant.KEY_IMAGE_BACKDROP));
+                    Movie movie = new Movie(result.getJSONObject(i));
                     mMovieList.add(movie);
                     mAdapter.notifyDataSetChanged();
                 }
