@@ -12,7 +12,7 @@ public class DetailActivity extends AppCompatActivity {
 
     Movie mMovie;
     ImageView mImageBackdrop, mImagePoster;
-    TextView mTextViewTitle, mTextViewReleaseDate, mTextViewSinopsis, mTextViewUserRating;
+    TextView mTextViewTitle, mTextViewReleaseDate, mTextViewSynopsis, mTextViewUserRating;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,8 +23,8 @@ public class DetailActivity extends AppCompatActivity {
         mImageBackdrop = (ImageView) findViewById(R.id.backdropImage);
         mTextViewTitle = (TextView) findViewById(R.id.movieTitle);
         mTextViewReleaseDate = (TextView) findViewById(R.id.releaseDate);
-        /*mTextViewSinopsis = (TextView) findViewById(R.id.tv_sinopsis);
-        mTextViewUserRating = (TextView) findViewById(R.id.tv_userRating);*/
+        mTextViewSynopsis = (TextView) findViewById(R.id.synopsisMovie);
+        /*mTextViewUserRating = (TextView) findViewById(R.id.tv_userRating);*/
 
         //fetching data from percable object
         mMovie = getIntent().getParcelableExtra("movie");
@@ -44,8 +44,8 @@ public class DetailActivity extends AppCompatActivity {
 
         mTextViewTitle.setText(mMovie.getTitle());
         mTextViewReleaseDate.setText(mMovie.getReleaseDate());
-        /*mTextViewSinopsis.setText(mMovie.getSinopsis());
-        mTextViewUserRating.setText(mMovie.getUserRating() + "/10");*/
+        mTextViewSynopsis.setText(mMovie.getSynopsis());
+        /*mTextViewUserRating.setText(mMovie.getUserRating() + "/10");*/
 
     }
 

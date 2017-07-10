@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.galihpw.popularmovies.adapter.MovieAdapter;
 import com.galihpw.popularmovies.config.Constant;
+import com.galihpw.popularmovies.config.CustomItemOffset;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,7 +33,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
 
     private ArrayList<Movie> mMovieList;
     private TextView noInternet;
-    private ProgressBar mLoadingList;
+    private ProgressBar mLoading;
     private RecyclerView mRecyclerView;
     private MovieAdapter mAdapter;
 
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
         }
 
         noInternet = (TextView) findViewById(R.id.noInternet);
-        mLoadingList = (ProgressBar) findViewById(R.id.loadingListMovie);
+        mLoading = (ProgressBar) findViewById(R.id.loadingListMovie);
         mRecyclerView = (RecyclerView) findViewById(R.id.movieRecycle);
         mAdapter = new MovieAdapter(mMovieList, MainActivity.this, MainActivity.this);
 
@@ -103,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
 
         protected void onPreExecute() {
             mRecyclerView.setVisibility(View.INVISIBLE);
-            mLoadingList.setVisibility(View.VISIBLE);
+            mLoading.setVisibility(View.VISIBLE);
         }
 
         protected String doInBackground(Void... urls) {
@@ -140,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
                 showJSON(response);
                 mRecyclerView.setVisibility(View.VISIBLE);
             }
-            mLoadingList.setVisibility(View.GONE);
+            mLoading.setVisibility(View.GONE);
             Log.i("INFO", response);
         }
 

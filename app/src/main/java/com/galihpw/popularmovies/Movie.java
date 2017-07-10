@@ -3,6 +3,8 @@ package com.galihpw.popularmovies;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.galihpw.popularmovies.helper.JsonHelper;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,29 +16,29 @@ public class Movie implements Parcelable{
 
     private long mId;
     private String mTitle;
-    private String mImage;
-    private String mSinopsis;
-    private float mUserRating;
     private String mReleaseDate;
+    private String mSynopsis;
+    private float mUserRating;
+    private String mImage;
     private String mImageBackdrop;
 
     public Movie(JSONObject object) throws JSONException {
         mId = JsonHelper.getLongJson(object, "id");
         mTitle = JsonHelper.getStringJson(object, "original_title");
-        mImage = JsonHelper.getStringJson(object, "poster_path");
-        mSinopsis = JsonHelper.getStringJson(object, "overview");
         mReleaseDate = JsonHelper.getStringJson(object, "release_date");
+        mSynopsis = JsonHelper.getStringJson(object, "overview");
         mUserRating = JsonHelper.getFloatJson(object, "vote_average");
+        mImage = JsonHelper.getStringJson(object, "poster_path");
         mImageBackdrop= JsonHelper.getStringJson(object, "backdrop_path");
     }
 
     public Movie(Parcel in) {
         mId = in.readLong();
         mTitle = in.readString();
-        mImage = in.readString();
-        mSinopsis = in.readString();
-        mUserRating = in.readFloat();
         mReleaseDate = in.readString();
+        mSynopsis = in.readString();
+        mUserRating = in.readFloat();
+        mImage = in.readString();
         mImageBackdrop = in.readString();
     }
 
@@ -65,12 +67,12 @@ public class Movie implements Parcelable{
         this.mImage = image;
     }
 
-    public String getSinopsis() {
-        return mSinopsis;
+    public String getSynopsis() {
+        return mSynopsis;
     }
 
-    public void setSinopsis(String sinopsis) {
-        mSinopsis = sinopsis;
+    public void setSynopsis(String sinopsis) {
+        mSynopsis = sinopsis;
     }
 
     public float getUserRating() {
@@ -106,10 +108,10 @@ public class Movie implements Parcelable{
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeLong(mId);
         parcel.writeString(mTitle);
-        parcel.writeString(mImage);
-        parcel.writeString(mSinopsis);
-        parcel.writeFloat(mUserRating);
         parcel.writeString(mReleaseDate);
+        parcel.writeString(mSynopsis);
+        parcel.writeFloat(mUserRating);
+        parcel.writeString(mImage);
         parcel.writeString(mImageBackdrop);
     }
 

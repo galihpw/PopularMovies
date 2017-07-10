@@ -1,4 +1,4 @@
-package com.galihpw.popularmovies;
+package com.galihpw.popularmovies.config;
 
 import android.content.Context;
 import android.graphics.Rect;

@@ -1,4 +1,4 @@
-package com.galihpw.popularmovies;
+package com.galihpw.popularmovies.helper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
