@@ -24,7 +24,7 @@ public class DetailActivity extends AppCompatActivity {
         mTextViewTitle = (TextView) findViewById(R.id.movieTitle);
         mTextViewReleaseDate = (TextView) findViewById(R.id.releaseDate);
         mTextViewSynopsis = (TextView) findViewById(R.id.synopsisMovie);
-        /*mTextViewUserRating = (TextView) findViewById(R.id.tv_userRating);*/
+        mTextViewUserRating = (TextView) findViewById(R.id.userRating);
 
         //fetching data from percable object
         mMovie = getIntent().getParcelableExtra("movie");
@@ -45,7 +45,7 @@ public class DetailActivity extends AppCompatActivity {
         mTextViewTitle.setText(mMovie.getTitle());
         mTextViewReleaseDate.setText(mMovie.getReleaseDate());
         mTextViewSynopsis.setText(mMovie.getSynopsis());
-        /*mTextViewUserRating.setText(mMovie.getUserRating() + "/10");*/
+        mTextViewUserRating.setText(mMovie.getUserRating() + "/10");
 
     }
 
