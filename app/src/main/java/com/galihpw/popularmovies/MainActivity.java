@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
     private ProgressBar mLoading;
     private RecyclerView mRecyclerView;
     private MovieAdapter mAdapter;
+    int status = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +75,14 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
             case R.id.refresh:
                 new MovieDBQueryTask().execute();
                 return true;
+            case R.id.topRated:
+                new MovieDBQueryTask().execute();
+                status = 1;
+                return true;
+            case R.id.popular:
+                new MovieDBQueryTask().execute();
+                status = 0;
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -111,7 +120,14 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
             // Do some validation here
 
             try {
-                URL url = new URL(Constant.URL + Constant.API_KEY + Constant.LANGUAGE + Constant.PAGE);
+                String URL;
+                if(status == 1){
+                    URL = Constant.URL_TOP_RATED;
+                }else{
+                    URL = Constant.URL_POPULAR;
+                }
+
+                URL url = new URL(URL + BuildConfig.THE_MOVIE_DB_API_TOKEN + Constant.LANGUAGE + Constant.PAGE);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 try {
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));

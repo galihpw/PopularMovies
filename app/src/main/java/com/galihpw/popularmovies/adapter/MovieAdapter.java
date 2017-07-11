@@ -66,7 +66,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MyViewHolder
             super(itemView);
             movieImage = (ImageView) itemView.findViewById(R.id.moviePoster);
             movieTitle = (TextView) itemView.findViewById(R.id.movieTitle);
-            movieTitle.setTextColor(Color.WHITE);
             itemView.setOnClickListener(this);
         }
 
