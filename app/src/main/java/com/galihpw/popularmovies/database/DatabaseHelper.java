@@ -8,7 +8,7 @@ import android.util.Log;
 import static com.galihpw.popularmovies.database.MovieContract.BACKDROP_URL;
 import static com.galihpw.popularmovies.database.MovieContract.IMAGE_URL;
 import static com.galihpw.popularmovies.database.MovieContract.RELEASE_DATE;
-import static com.galihpw.popularmovies.database.MovieContract.SINOPSIS;
+import static com.galihpw.popularmovies.database.MovieContract.SYNOPSIS;
 import static com.galihpw.popularmovies.database.MovieContract.TITLE;
 import static com.galihpw.popularmovies.database.MovieContract.USER_RATING;
 import static com.galihpw.popularmovies.database.MovieContract._ID;
@@ -29,7 +29,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     _ID + " LONG PRIMARY KEY , " +
                     TITLE + " TEXT NOT NULL, " +
                     IMAGE_URL + " TEXT NOT NULL, " +
-                    SINOPSIS+ " TEXT NOT NULL, " +
+                    SYNOPSIS+ " TEXT NOT NULL, " +
                     USER_RATING + " FLOAT NOT NULL, " +
                     RELEASE_DATE + " TEXT NOT NULL, " +
                     BACKDROP_URL + " TEXT NOT NULL); ";

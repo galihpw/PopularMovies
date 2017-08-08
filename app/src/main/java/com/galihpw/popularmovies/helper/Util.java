@@ -40,9 +40,9 @@ public class Util {
         try {
             connection = (HttpsURLConnection) url.openConnection();
             // Timeout for reading InputStream arbitrarily set to 3000ms.
-            connection.setReadTimeout(10000);
+            connection.setReadTimeout(3000);
             // Timeout for connection.connect() arbitrarily set to 3000ms.
-            connection.setConnectTimeout(10000);
+            connection.setConnectTimeout(3000);
             // For this use case, set HTTP method to GET.
             connection.setRequestMethod("GET");
             // Already true by default but setting just in case; needs to be true since this request

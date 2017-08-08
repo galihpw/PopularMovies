@@ -51,8 +51,8 @@ public class UserReviewAdapter extends RecyclerView.Adapter<UserReviewAdapter.Us
 
         UserReviewHolder(View itemView) {
             super(itemView);
-            namaUserReview = (TextView) itemView.findViewById(R.id.tv_name);
-            mReview = (TextView) itemView.findViewById(R.id.tv_review);
+            namaUserReview = (TextView) itemView.findViewById(R.id.rev_name);
+            mReview = (TextView) itemView.findViewById(R.id.review);
         }
     }
 

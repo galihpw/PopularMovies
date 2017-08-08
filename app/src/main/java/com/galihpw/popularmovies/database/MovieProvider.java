@@ -28,7 +28,7 @@ import static com.galihpw.popularmovies.database.MovieContract._ID;
 
 public class MovieProvider extends ContentProvider {
 
-    private static HashMap<String, String> MOVIE_PROJECTION_MAP;
+    private static HashMap<String, String> MOVIE_MAP;
 
     private static final int MOVIE = 1;
     private static final int MOVIE_ID = 2;
@@ -51,11 +51,6 @@ public class MovieProvider extends ContentProvider {
         Context context = getContext();
         DatabaseHelper dbHelper = new DatabaseHelper(context);
 
-        /**
-         * Create a write able database which will trigger its
-         * creation if it doesn't already exist.
-         */
-
         db = dbHelper.getWritableDatabase();
         return (db != null) ;
     }
@@ -71,7 +66,7 @@ public class MovieProvider extends ContentProvider {
 
         switch (uriMatcher.match(uri)){
             case MOVIE:
-                queryBuilder.setProjectionMap(MOVIE_PROJECTION_MAP);
+                queryBuilder.setProjectionMap(MOVIE_MAP);
                 break;
             case MOVIE_ID:
                 queryBuilder.appendWhere(_ID + "=" + uri.getPathSegments().get(1));
@@ -81,9 +76,7 @@ public class MovieProvider extends ContentProvider {
         }
 
         if(sortOrder == null || sortOrder.equals("")){
-            /**
-             * By default sort on student names
-             */
+
             sortOrder = TITLE;
         }
 
@@ -101,16 +94,10 @@ public class MovieProvider extends ContentProvider {
     @Override
     public String getType(@NonNull Uri uri) {
         switch (uriMatcher.match(uri)){
-            /**
-             * Get all student records
-             */
             case MOVIE:
-                return "vnd.android.cursor.dir/vnd.com.hidayatasep.popularmovies.movieprovider.movie";
-            /**
-             * Get a particular student
-             */
+                return "vnd.android.cursor.dir/vnd.com.galihpw.popularmovies.movieprovider.movie";
             case MOVIE_ID:
-                return "vnd.android.cursor.item/vnd.com.hidayatasep.popularmovies.movieprovider.movie";
+                return "vnd.android.cursor.item/vnd.com.galihpw.popularmovies.movieprovider.movie";
             default:
                 throw new IllegalArgumentException("Unsupported URI: " + uri);
         }

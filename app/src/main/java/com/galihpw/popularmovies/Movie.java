@@ -81,8 +81,8 @@ public class Movie implements Parcelable{
         return mSynopsis;
     }
 
-    public void setSynopsis(String sinopsis) {
-        mSynopsis = sinopsis;
+    public void setSynopsis(String synopsis) {
+        mSynopsis = synopsis;
     }
 
     public float getUserRating() {

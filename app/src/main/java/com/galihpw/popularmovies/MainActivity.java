@@ -37,7 +37,7 @@ import static com.galihpw.popularmovies.database.MovieContract.BACKDROP_URL;
 import static com.galihpw.popularmovies.database.MovieContract.CONTENT_URI;
 import static com.galihpw.popularmovies.database.MovieContract.IMAGE_URL;
 import static com.galihpw.popularmovies.database.MovieContract.RELEASE_DATE;
-import static com.galihpw.popularmovies.database.MovieContract.SINOPSIS;
+import static com.galihpw.popularmovies.database.MovieContract.SYNOPSIS;
 import static com.galihpw.popularmovies.database.MovieContract.TITLE;
 import static com.galihpw.popularmovies.database.MovieContract.USER_RATING;
 import static com.galihpw.popularmovies.database.MovieContract._ID;
@@ -48,9 +48,9 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private ArrayList<Movie> mMovieList;
-    private RecyclerView mRecyclerView;
     private MovieAdapter mAdapter;
     private ProgressBar mProgressBar;
+    private RecyclerView mRecyclerView;
     private TextView mNoData;
 
     SharedPreferences mSharedPreferences;
@@ -85,11 +85,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
         }
     }
 
-    public void setUpSharedreference(){
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-        mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -115,11 +110,9 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
         }
     }
 
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+    public void setUpSharedreference(){
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -130,7 +123,12 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
         }
     }
 
-    //function for download movie
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+    }
+
     public void getMovie(){
         String sortOrder = mSharedPreferences.getString(getString(R.string.sort_order_key), getString(R.string.sort_order_default));
         if(sortOrder.equals("favorite")){
@@ -140,59 +138,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
             if(Util.isNetworkConnected(MainActivity.this)){
                 new DownloadMovie().execute(url);
             }else {
-                showNoConnectionView();
+                showNoConnection();
             }
-        }
-    }
-
-    public void getMovieFromDatabase(){
-        String[] projection = {
-                _ID,
-                TITLE,
-                IMAGE_URL,
-                SINOPSIS,
-                USER_RATING,
-                RELEASE_DATE,
-                BACKDROP_URL
-
-        };
-        Uri uri = CONTENT_URI;
-        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
-        if(cursor != null){
-            if(cursor.moveToFirst()){
-                mMovieList.clear();
-                mAdapter.notifyDataSetChanged();
-                do{
-                    long id = cursor.getLong(cursor.getColumnIndex(MovieContract._ID));
-                    String title = cursor.getString(cursor.getColumnIndex(MovieContract.TITLE));
-                    String image = cursor.getString(cursor.getColumnIndex(MovieContract.IMAGE_URL));
-                    String sinopsis = cursor.getString(cursor.getColumnIndex(MovieContract.SINOPSIS));
-                    float userrating = cursor.getFloat(cursor.getColumnIndex(MovieContract.USER_RATING));
-                    String releasedate = cursor.getString(cursor.getColumnIndex(MovieContract.RELEASE_DATE));
-                    String imagebackdrop = cursor.getString(cursor.getColumnIndex(MovieContract.BACKDROP_URL));
-                    Movie movie = new Movie(id,title, image, sinopsis,userrating, releasedate,imagebackdrop);
-                    mMovieList.add(movie);
-                    mAdapter.notifyDataSetChanged();
-                }while (cursor.moveToNext());
-            }else {
-                showNoFavoriteMovie();
-            }
-        }else {
-            showNoFavoriteMovie();
-        }
-    }
-
-    @Override
-    public void onRecyclerViewItemClicked(int position) {
-        Intent intent = new Intent(MainActivity.this, DetailActivity.class);
-        intent.putExtra("movie", mMovieList.get(position));
-        startActivity(intent);
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if(key.equals(getString(R.string.sort_order_key))){
-            getMovie();
         }
     }
 
@@ -244,11 +191,62 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
                 } catch (JSONException e) {
                     e.printStackTrace();
                     Log.d(TAG,e.toString());
-                    showNoDataView();
+                    showNoData();
                 }
             }else {
-                showNoDataView();
+                showNoData();
             }
+        }
+    }
+
+    @Override
+    public void onRecyclerViewItemClicked(int position) {
+        Intent intent = new Intent(MainActivity.this, DetailActivity.class);
+        intent.putExtra("movie", mMovieList.get(position));
+        startActivity(intent);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if(key.equals(getString(R.string.sort_order_key))){
+            getMovie();
+        }
+    }
+
+    public void getMovieFromDatabase(){
+        String[] projection = {
+                _ID,
+                TITLE,
+                IMAGE_URL,
+                SYNOPSIS,
+                USER_RATING,
+                RELEASE_DATE,
+                BACKDROP_URL
+
+        };
+        Uri uri = CONTENT_URI;
+        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
+        if(cursor != null){
+            if(cursor.moveToFirst()){
+                mMovieList.clear();
+                mAdapter.notifyDataSetChanged();
+                do{
+                    long id = cursor.getLong(cursor.getColumnIndex(MovieContract._ID));
+                    String title = cursor.getString(cursor.getColumnIndex(MovieContract.TITLE));
+                    String image = cursor.getString(cursor.getColumnIndex(MovieContract.IMAGE_URL));
+                    String synopsis = cursor.getString(cursor.getColumnIndex(MovieContract.SYNOPSIS));
+                    float userrating = cursor.getFloat(cursor.getColumnIndex(MovieContract.USER_RATING));
+                    String releasedate = cursor.getString(cursor.getColumnIndex(MovieContract.RELEASE_DATE));
+                    String imagebackdrop = cursor.getString(cursor.getColumnIndex(MovieContract.BACKDROP_URL));
+                    Movie movie = new Movie(id,title, image, synopsis,userrating, releasedate,imagebackdrop);
+                    mMovieList.add(movie);
+                    mAdapter.notifyDataSetChanged();
+                }while (cursor.moveToNext());
+            }else {
+                showNoFavorite();
+            }
+        }else {
+            showNoFavorite();
         }
     }
 
@@ -258,26 +256,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
         mNoData.setVisibility(View.GONE);
     }
 
-    private void showNoDataView() {
-        Toast.makeText(MainActivity.this, "Oops an error occurred", Toast.LENGTH_SHORT).show();
-        mRecyclerView.setVisibility(View.GONE);
-        mNoData.setVisibility(View.VISIBLE);
-    }
-
-    private void showNoConnectionView() {
-        Toast.makeText(MainActivity.this, "No internet connection", Toast.LENGTH_SHORT).show();
-        mRecyclerView.setVisibility(View.GONE);
-        mNoData.setText(getString(R.string.no_internet_connection));
-        mNoData.setVisibility(View.VISIBLE);
-    }
-
-    private void showNoFavoriteMovie() {
-        mRecyclerView.setVisibility(View.GONE);
-        mNoData.setText(R.string.no_data_favorite_movie);
-        mNoData.setVisibility(View.VISIBLE);
-    }
-
-
     private void showRecyclerView() {
         if(mRecyclerView.getVisibility() == View.GONE){
             mRecyclerView.setVisibility(View.VISIBLE);
@@ -285,5 +263,24 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
         if(mNoData.getVisibility() == View.VISIBLE){
             mNoData.setVisibility(View.GONE);
         }
+    }
+
+    private void showNoData() {
+        Toast.makeText(MainActivity.this, "Oops an error occurred", Toast.LENGTH_SHORT).show();
+        mRecyclerView.setVisibility(View.GONE);
+        mNoData.setVisibility(View.VISIBLE);
+    }
+
+    private void showNoConnection() {
+        Toast.makeText(MainActivity.this, "No internet connection", Toast.LENGTH_SHORT).show();
+        mRecyclerView.setVisibility(View.GONE);
+        mNoData.setText(getString(R.string.no_internet_connection));
+        mNoData.setVisibility(View.VISIBLE);
+    }
+
+    private void showNoFavorite() {
+        mRecyclerView.setVisibility(View.GONE);
+        mNoData.setText(R.string.no_data_favorite_movie);
+        mNoData.setVisibility(View.VISIBLE);
     }
 }

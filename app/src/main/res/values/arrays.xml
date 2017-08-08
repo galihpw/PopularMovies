@@ -2,15 +2,15 @@
 <resources>
 
     <string-array name="sortOrder">
-        <item>Highest-Rated</item>
-        <item>Most Popular</item>
         <item>Favorite Movie</item>
+        <item>Most Popular</item>
+        <item>Highest-Rated</item>
     </string-array>
 
     <string-array name="sortOrderValue">
-        <item>top_rated</item>
-        <item>popular</item>
         <item>favorite</item>
+        <item>popular</item>
+        <item>top_rated</item>
     </string-array>
 
 </resources>

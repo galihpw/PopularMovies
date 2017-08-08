@@ -36,7 +36,7 @@ import static com.galihpw.popularmovies.database.MovieContract.BACKDROP_URL;
 import static com.galihpw.popularmovies.database.MovieContract.CONTENT_URI;
 import static com.galihpw.popularmovies.database.MovieContract.IMAGE_URL;
 import static com.galihpw.popularmovies.database.MovieContract.RELEASE_DATE;
-import static com.galihpw.popularmovies.database.MovieContract.SINOPSIS;
+import static com.galihpw.popularmovies.database.MovieContract.SYNOPSIS;
 import static com.galihpw.popularmovies.database.MovieContract.TITLE;
 import static com.galihpw.popularmovies.database.MovieContract.USER_RATING;
 import static com.galihpw.popularmovies.database.MovieContract._ID;
@@ -44,21 +44,21 @@ import static com.galihpw.popularmovies.database.MovieContract._ID;
 public class DetailActivity extends AppCompatActivity implements TrailerAdapter.OnTrailerItemClickListener, View.OnClickListener{
 
     private static final String TAG = DetailActivity.class.getSimpleName();
+
     Movie mMovie;
     ImageView mImgBackdrop, mImgPoster;
-    TextView mTitle, mReleaseDate, mSinopsis, mUserRating;
+    TextView mTitle, mReleaseDate, mSynopsis, mUserRating;
     RecyclerView mRecyclerTrailer, mRecyclerUserReview;
     ImageButton mImageButtonFavorite;
+    TrailerAdapter mTrailerAdapter;
+    UserReviewAdapter mUserReviewAdapter;
 
     private ArrayList<TrailerFilm> mTrailerFilmsList;
     private ArrayList<UserReview> mUserReviewsList;
 
-    TrailerAdapter mTrailerAdapter;
-    UserReviewAdapter mUserReviewAdapter;
-
     boolean isBookmark = false;
-    boolean isFinishDownloadTrailer = false;
-    boolean isFinishDownloadUserReview = false;
+    boolean isTrailer = false;
+    boolean isUserReview = false;
 
 
     @Override
@@ -70,41 +70,39 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         mImgBackdrop = (ImageView) findViewById(R.id.backdropImage);
         mTitle = (TextView) findViewById(R.id.movieTitle);
         mReleaseDate = (TextView) findViewById(R.id.releaseDate);
-        mSinopsis = (TextView) findViewById(R.id.synopsisMovie);
+        mSynopsis = (TextView) findViewById(R.id.synopsisMovie);
         mUserRating = (TextView) findViewById(R.id.userRating);
         mRecyclerTrailer = (RecyclerView) findViewById(R.id.recycle_view_trailer);
         mRecyclerUserReview = (RecyclerView) findViewById(R.id.recycle_view_user_review);
         mImageButtonFavorite = (ImageButton) findViewById(R.id.fav_love);
 
-        //fetching data from percable movie object
         if(savedInstanceState != null && savedInstanceState.containsKey("movie")){
             mMovie = savedInstanceState.getParcelable("movie");
         }else{
             mMovie = getIntent().getParcelableExtra("movie");
         }
 
-        //fetching data trailer
         if(savedInstanceState != null && savedInstanceState.containsKey("isDownloadTrailer")){
-            isFinishDownloadTrailer = savedInstanceState.getBoolean("isDownloadTrailer");
+            isTrailer = savedInstanceState.getBoolean("isDownloadTrailer");
         }
         if(savedInstanceState != null && savedInstanceState.containsKey("trailer")){
             mTrailerFilmsList = savedInstanceState.getParcelableArrayList("trailer");
         }else{
             mTrailerFilmsList = new ArrayList<TrailerFilm>();
-            if(!isFinishDownloadTrailer){
+            if(!isTrailer){
                 new DownloadTrailer().execute(Util.getUrlTrailer(mMovie.getId()));
             }
         }
 
         //fetching data user review
         if(savedInstanceState != null && savedInstanceState.containsKey("isDownloadUserReview")){
-            isFinishDownloadUserReview = savedInstanceState.getBoolean("isDownloadUserReview");
+            isUserReview = savedInstanceState.getBoolean("isDownloadUserReview");
         }
         if(savedInstanceState != null && savedInstanceState.containsKey("userreview")){
             mUserReviewsList = savedInstanceState.getParcelableArrayList("userreview");
         }else{
             mUserReviewsList = new ArrayList<UserReview>();
-            if(!isFinishDownloadUserReview){
+            if(!isUserReview){
                 new DownloadUserRating().execute(Util.getUrlUserReview(mMovie.getId()));
             }
         }
@@ -125,7 +123,7 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
         mTitle.setText(mMovie.getTitle());
         mReleaseDate.setText(mMovie.getReleaseDate());
-        mSinopsis.setText(mMovie.getSynopsis());
+        mSynopsis.setText(mMovie.getSynopsis());
         mUserRating.setText(mMovie.getUserRating() + "/10");
 
 
@@ -161,73 +159,9 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
             outState.putParcelable("movie",mMovie);
         }
 
-        outState.putBoolean("isDownloadTrailer", isFinishDownloadTrailer);
-        outState.putBoolean("isDownloadUserReview", isFinishDownloadUserReview);
+        outState.putBoolean("isDownloadTrailer", isTrailer);
+        outState.putBoolean("isDownloadUserReview", isUserReview);
 
-    }
-
-    private void setImageBookmark() {
-        isBookmark = checkMovie();
-        if(isBookmark){
-            mImageButtonFavorite.setBackgroundResource(R.drawable.love);
-        }else {
-            mImageButtonFavorite.setBackgroundResource(R.drawable.love_white);
-        }
-    }
-
-    @Override
-    public void onTrailerItemClicked(String youtubeUrl) {
-        Intent intent = new Intent(Intent.ACTION_VIEW,
-                Uri.parse(youtubeUrl));
-        startActivity(intent);
-    }
-
-    @Override
-    public void onClick(View view) {
-        isBookmark = checkMovie();
-        if(isBookmark){
-            deleteRecord();
-        }else{
-            insertMovie();
-        }
-        setImageBookmark();
-    }
-
-    private void insertMovie() {
-        ContentValues values = new ContentValues();
-        values.put(_ID, mMovie.getId());
-        values.put(TITLE, mMovie.getTitle());
-        values.put(IMAGE_URL, mMovie.getImage());
-        values.put(SINOPSIS, mMovie.getSynopsis());
-        values.put(USER_RATING, mMovie.getUserRating());
-        values.put(RELEASE_DATE, mMovie.getReleaseDate());
-        values.put(BACKDROP_URL, mMovie.getImageBackdrop());
-
-        Uri uri = getContentResolver().insert(
-                CONTENT_URI, values);
-        Log.d(TAG, uri.toString());
-        Toast.makeText(this, "Add to favorite movie", Toast.LENGTH_SHORT).show();
-    }
-
-    private boolean checkMovie(){
-        String[] projection = {
-                TITLE
-        };
-        Uri uri = Uri.parse(CONTENT_URI + "/" + mMovie.getId());
-        Cursor cursor = getContentResolver().query(uri, projection,null,null,null);
-        if(cursor == null){
-            return false;
-        }
-        if(cursor.getCount() == 0){
-            return false;
-        }
-        return true;
-    }
-
-    private void deleteRecord(){
-        Uri uri = Uri.parse(CONTENT_URI + "/" + mMovie.getId());
-        getContentResolver().delete(uri,null,null);
-        Toast.makeText(this, "Delete from favorite movie", Toast.LENGTH_SHORT).show();
     }
 
     private class DownloadTrailer extends AsyncTask<String, Void, String>{
@@ -274,7 +208,7 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
                             mTrailerFilmsList.add(trailerFilm);
                             mTrailerAdapter.notifyDataSetChanged();
                         }
-                        isFinishDownloadTrailer = true;
+                        isTrailer = true;
                     } catch (JSONException e) {
                         e.printStackTrace();
                         Log.e(TAG,e.toString());
@@ -329,7 +263,7 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
                             mUserReviewsList.add(userReview);
                             mUserReviewAdapter.notifyDataSetChanged();
                         }
-                        isFinishDownloadUserReview = true;
+                        isUserReview = true;
                     } catch (JSONException e) {
                         e.printStackTrace();
                         Log.e(TAG, e.toString());
@@ -337,6 +271,70 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
                 }
             }
         }
+    }
+
+    @Override
+    public void onTrailerItemClicked(String youtubeUrl) {
+        Intent intent = new Intent(Intent.ACTION_VIEW,
+                Uri.parse(youtubeUrl));
+        startActivity(intent);
+    }
+
+    @Override
+    public void onClick(View view) {
+        isBookmark = checkMovie();
+        if(isBookmark){
+            deleteRecord();
+        }else{
+            insertMovie();
+        }
+        setImageBookmark();
+    }
+
+    private void setImageBookmark() {
+        isBookmark = checkMovie();
+        if(isBookmark){
+            mImageButtonFavorite.setBackgroundResource(R.drawable.love);
+        }else {
+            mImageButtonFavorite.setBackgroundResource(R.drawable.love_white);
+        }
+    }
+
+    private void insertMovie() {
+        ContentValues values = new ContentValues();
+        values.put(_ID, mMovie.getId());
+        values.put(TITLE, mMovie.getTitle());
+        values.put(IMAGE_URL, mMovie.getImage());
+        values.put(SYNOPSIS, mMovie.getSynopsis());
+        values.put(USER_RATING, mMovie.getUserRating());
+        values.put(RELEASE_DATE, mMovie.getReleaseDate());
+        values.put(BACKDROP_URL, mMovie.getImageBackdrop());
+
+        Uri uri = getContentResolver().insert(
+                CONTENT_URI, values);
+        Log.d(TAG, uri.toString());
+        Toast.makeText(this, "Add to favorite movie", Toast.LENGTH_SHORT).show();
+    }
+
+    private boolean checkMovie(){
+        String[] projection = {
+                TITLE
+        };
+        Uri uri = Uri.parse(CONTENT_URI + "/" + mMovie.getId());
+        Cursor cursor = getContentResolver().query(uri, projection,null,null,null);
+        if(cursor == null){
+            return false;
+        }
+        if(cursor.getCount() == 0){
+            return false;
+        }
+        return true;
+    }
+
+    private void deleteRecord(){
+        Uri uri = Uri.parse(CONTENT_URI + "/" + mMovie.getId());
+        getContentResolver().delete(uri,null,null);
+        Toast.makeText(this, "Delete from favorite movie", Toast.LENGTH_SHORT).show();
     }
 
 }
