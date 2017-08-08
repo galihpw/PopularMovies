@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="sortOrder">
+        <item>Highest-Rated</item>
+        <item>Most Popular</item>
+        <item>Favorite Movie</item>
+    </string-array>
+
+    <string-array name="sortOrderValue">
+        <item>top_rated</item>
+        <item>popular</item>
+        <item>favorite</item>
+    </string-array>
+
+</resources>

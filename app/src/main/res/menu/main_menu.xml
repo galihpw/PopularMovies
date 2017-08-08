@@ -3,14 +3,13 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="200"
+        android:title="Setting"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/refresh"
         android:icon="@android:drawable/ic_popup_sync"
         android:title="Refresh"
         app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/topRated"
-        android:title="Top Rated" />
-    <item
-        android:id="@+id/popular"
-        android:title="Popular" />
 </menu>

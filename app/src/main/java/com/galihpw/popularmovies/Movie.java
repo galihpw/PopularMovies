@@ -32,6 +32,16 @@ public class Movie implements Parcelable{
         mImageBackdrop= JsonHelper.getStringJson(object, "backdrop_path");
     }
 
+    public Movie(long id, String title, String image, String synopsis, float userRating, String releaseDate, String imageBackdrop) {
+        mId = id;
+        mTitle = title;
+        mImage = image;
+        mSynopsis = synopsis;
+        mUserRating = userRating;
+        mReleaseDate = releaseDate;
+        mImageBackdrop = imageBackdrop;
+    }
+
     public Movie(Parcel in) {
         mId = in.readLong();
         mTitle = in.readString();

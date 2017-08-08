@@ -44,7 +44,8 @@
                 android:paddingRight="5dp"
                 android:paddingTop="3dp"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toTopOf="parent"
+                android:id="@+id/linearLayout">
 
                 <ImageView
                     android:id="@+id/imageView"
@@ -125,6 +126,22 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp" />
 
+            <ImageButton
+                android:id="@+id/fav_love"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/love"
+                android:scaleType="center"
+                app:layout_constraintBottom_toBottomOf="@+id/backdropImage"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/backdropImage" />
+
         </android.support.constraint.ConstraintLayout>
 
         <LinearLayout
@@ -154,6 +171,64 @@
                 android:layout_height="wrap_content"
                 android:text="TextView"
                 android:textColor="@android:color/white" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="20dp"
+            android:layout_weight="2"
+            android:background="@color/backgroundList"
+            android:orientation="vertical"
+            android:paddingBottom="12dp"
+            android:paddingLeft="12dp"
+            android:paddingTop="12dp">
+
+            <TextView
+                android:id="@+id/trailer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Trailer"
+                android:textColor="@android:color/white"
+                android:textSize="12sp" />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recycle_view_trailer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+            </android.support.v7.widget.RecyclerView>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="20dp"
+            android:layout_weight="2"
+            android:background="@color/backgroundList"
+            android:orientation="vertical"
+            android:paddingBottom="12dp"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:paddingTop="12dp">
+
+            <TextView
+                android:id="@+id/user_review"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="User Review"
+                android:textColor="@android:color/white"
+                android:textSize="12sp" />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recycle_view_user_review"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
         </LinearLayout>
 
     </LinearLayout>

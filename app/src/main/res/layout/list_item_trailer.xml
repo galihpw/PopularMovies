@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@color/colorBackgroud"
+    >
+
+    <ImageView
+        android:layout_width="240dp"
+        android:layout_height="180dp"
+        android:id="@+id/image_movie"
+        />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ic_play_arrow_white_24dp"
+        android:layout_centerInParent="true"
+        />
+
+</RelativeLayout>

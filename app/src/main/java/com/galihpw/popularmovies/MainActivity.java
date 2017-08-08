@@ -1,47 +1,66 @@
 package com.galihpw.popularmovies;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.galihpw.popularmovies.adapter.MovieAdapter;
-import com.galihpw.popularmovies.config.Constant;
+import com.galihpw.popularmovies.database.MovieContract;
 import com.galihpw.popularmovies.config.CustomItemOffset;
+import com.galihpw.popularmovies.helper.Util;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRecyclerViewItemClickListener{
+import static com.galihpw.popularmovies.database.MovieContract.BACKDROP_URL;
+import static com.galihpw.popularmovies.database.MovieContract.CONTENT_URI;
+import static com.galihpw.popularmovies.database.MovieContract.IMAGE_URL;
+import static com.galihpw.popularmovies.database.MovieContract.RELEASE_DATE;
+import static com.galihpw.popularmovies.database.MovieContract.SINOPSIS;
+import static com.galihpw.popularmovies.database.MovieContract.TITLE;
+import static com.galihpw.popularmovies.database.MovieContract.USER_RATING;
+import static com.galihpw.popularmovies.database.MovieContract._ID;
+
+public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRecyclerViewItemClickListener,
+        SharedPreferences.OnSharedPreferenceChangeListener{
+
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     private ArrayList<Movie> mMovieList;
-    private TextView noInternet;
-    private ProgressBar mLoading;
     private RecyclerView mRecyclerView;
     private MovieAdapter mAdapter;
-    int status = 0;
+    private ProgressBar mProgressBar;
+    private TextView mNoData;
+
+    SharedPreferences mSharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        setUpSharedreference();
 
         mMovieList = new ArrayList<Movie>();
 
@@ -49,42 +68,117 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
             mMovieList = savedInstanceState.getParcelableArrayList("movie");
         }
 
-        noInternet = (TextView) findViewById(R.id.noInternet);
-        mLoading = (ProgressBar) findViewById(R.id.loadingListMovie);
         mRecyclerView = (RecyclerView) findViewById(R.id.movieRecycle);
-        mAdapter = new MovieAdapter(mMovieList, MainActivity.this, MainActivity.this);
+        mProgressBar = (ProgressBar) findViewById(R.id.loadingListMovie);
+        mNoData = (TextView) findViewById(R.id.noInternet);
 
+        mAdapter = new MovieAdapter(mMovieList, MainActivity.this, MainActivity.this);
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(MainActivity.this, 2);
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.addItemDecoration(new CustomItemOffset(MainActivity.this, R.dimen.margin_item));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(mAdapter);
+
+        if(mMovieList.isEmpty()){
+            getMovie();
+        }
+    }
+
+    public void setUpSharedreference(){
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_menu, menu);
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
             case R.id.refresh:
-                new MovieDBQueryTask().execute();
+                getMovie();
                 return true;
-            case R.id.topRated:
-                new MovieDBQueryTask().execute();
-                status = 1;
-                return true;
-            case R.id.popular:
-                new MovieDBQueryTask().execute();
-                status = 0;
+            case R.id.action_settings:
+                Intent intent = new Intent(this, MyPreferenceActivity.class);
+                startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if(mMovieList != null){
+            outState.putParcelableArrayList("movie", mMovieList);
+        }
+    }
+
+    //function for download movie
+    public void getMovie(){
+        String sortOrder = mSharedPreferences.getString(getString(R.string.sort_order_key), getString(R.string.sort_order_default));
+        if(sortOrder.equals("favorite")){
+            getMovieFromDatabase();
+        }else{
+            String url = Util.getUrl(sortOrder);
+            if(Util.isNetworkConnected(MainActivity.this)){
+                new DownloadMovie().execute(url);
+            }else {
+                showNoConnectionView();
+            }
+        }
+    }
+
+    public void getMovieFromDatabase(){
+        String[] projection = {
+                _ID,
+                TITLE,
+                IMAGE_URL,
+                SINOPSIS,
+                USER_RATING,
+                RELEASE_DATE,
+                BACKDROP_URL
+
+        };
+        Uri uri = CONTENT_URI;
+        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
+        if(cursor != null){
+            if(cursor.moveToFirst()){
+                mMovieList.clear();
+                mAdapter.notifyDataSetChanged();
+                do{
+                    long id = cursor.getLong(cursor.getColumnIndex(MovieContract._ID));
+                    String title = cursor.getString(cursor.getColumnIndex(MovieContract.TITLE));
+                    String image = cursor.getString(cursor.getColumnIndex(MovieContract.IMAGE_URL));
+                    String sinopsis = cursor.getString(cursor.getColumnIndex(MovieContract.SINOPSIS));
+                    float userrating = cursor.getFloat(cursor.getColumnIndex(MovieContract.USER_RATING));
+                    String releasedate = cursor.getString(cursor.getColumnIndex(MovieContract.RELEASE_DATE));
+                    String imagebackdrop = cursor.getString(cursor.getColumnIndex(MovieContract.BACKDROP_URL));
+                    Movie movie = new Movie(id,title, image, sinopsis,userrating, releasedate,imagebackdrop);
+                    mMovieList.add(movie);
+                    mAdapter.notifyDataSetChanged();
+                }while (cursor.moveToNext());
+            }else {
+                showNoFavoriteMovie();
+            }
+        }else {
+            showNoFavoriteMovie();
         }
     }
 
@@ -96,86 +190,100 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.OnRe
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        new MovieDBQueryTask().execute();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if(mMovieList != null){
-            outState.putParcelableArrayList("movie", mMovieList);
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if(key.equals(getString(R.string.sort_order_key))){
+            getMovie();
         }
     }
 
-    public class MovieDBQueryTask extends AsyncTask<Void, Void, String> {
+    private class DownloadMovie extends AsyncTask<String, Void, String>{
 
+        @Override
         protected void onPreExecute() {
-            mRecyclerView.setVisibility(View.INVISIBLE);
-            mLoading.setVisibility(View.VISIBLE);
+            super.onPreExecute();
+            showProgressbar();
         }
 
-        protected String doInBackground(Void... urls) {
-            // Do some validation here
-
-            try {
-                String URL;
-                if(status == 1){
-                    URL = Constant.URL_TOP_RATED;
-                }else{
-                    URL = Constant.URL_POPULAR;
-                }
-
-                URL url = new URL(URL + BuildConfig.THE_MOVIE_DB_API_TOKEN + Constant.LANGUAGE + Constant.PAGE);
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        @Override
+        protected String doInBackground(String... strings) {
+            String result = null;
+            if(strings != null){
+                String urlString = strings[0];
+                //get data from api
                 try {
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                    StringBuilder stringBuilder = new StringBuilder();
-                    String line;
-                    while ((line = bufferedReader.readLine()) != null) {
-                        stringBuilder.append(line).append("\n");
-                    }
-                    bufferedReader.close();
-                    return stringBuilder.toString();
-                }
-                finally{
-                    urlConnection.disconnect();
+                    URL url = new URL(urlString);
+                    result = Util.downloadUrl(url);
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                    Log.e(TAG, e.toString());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Log.e(TAG, e.toString());
                 }
             }
-            catch(Exception e) {
-                Log.e("ERROR", e.getMessage(), e);
-                return null;
-            }
+            return result;
         }
 
-        protected void onPostExecute(String response) {
-            if(response == null) {
-                response = "THERE WAS AN ERROR";
-                noInternet.setVisibility(View.VISIBLE);
-            }else{
-                showJSON(response);
-                mRecyclerView.setVisibility(View.VISIBLE);
-            }
-            mLoading.setVisibility(View.GONE);
-            Log.i("INFO", response);
-        }
-
-        private void showJSON(String response) {
-            try {
-                JSONObject object = new JSONObject(response);
-                JSONArray result = object.getJSONArray("results");
-                mMovieList.clear();
-                mAdapter.notifyDataSetChanged();
-                // Parsing json
-                for (int i = 0; i < result.length(); i++) {
-                    Movie movie = new Movie(result.getJSONObject(i));
-                    mMovieList.add(movie);
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            Log.d(TAG, s);
+            mProgressBar.setVisibility(View.GONE);
+            if(s != null && !s.equals("")){
+                try {
+                    JSONObject object = new JSONObject(s);
+                    JSONArray results = object.getJSONArray("results");
+                    showRecyclerView();
+                    mMovieList.clear();
                     mAdapter.notifyDataSetChanged();
+                    for(int i=0; i<results.length(); i++){
+                        Movie movie = new Movie(results.getJSONObject(i));
+                        mMovieList.add(movie);
+                        mAdapter.notifyDataSetChanged();
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.d(TAG,e.toString());
+                    showNoDataView();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
+            }else {
+                showNoDataView();
             }
+        }
+    }
+
+    private void showProgressbar() {
+        mProgressBar.setVisibility(View.VISIBLE);
+        mRecyclerView.setVisibility(View.GONE);
+        mNoData.setVisibility(View.GONE);
+    }
+
+    private void showNoDataView() {
+        Toast.makeText(MainActivity.this, "Oops an error occurred", Toast.LENGTH_SHORT).show();
+        mRecyclerView.setVisibility(View.GONE);
+        mNoData.setVisibility(View.VISIBLE);
+    }
+
+    private void showNoConnectionView() {
+        Toast.makeText(MainActivity.this, "No internet connection", Toast.LENGTH_SHORT).show();
+        mRecyclerView.setVisibility(View.GONE);
+        mNoData.setText(getString(R.string.no_internet_connection));
+        mNoData.setVisibility(View.VISIBLE);
+    }
+
+    private void showNoFavoriteMovie() {
+        mRecyclerView.setVisibility(View.GONE);
+        mNoData.setText(R.string.no_data_favorite_movie);
+        mNoData.setVisibility(View.VISIBLE);
+    }
+
+
+    private void showRecyclerView() {
+        if(mRecyclerView.getVisibility() == View.GONE){
+            mRecyclerView.setVisibility(View.VISIBLE);
+        }
+        if(mNoData.getVisibility() == View.VISIBLE){
+            mNoData.setVisibility(View.GONE);
         }
     }
 }
