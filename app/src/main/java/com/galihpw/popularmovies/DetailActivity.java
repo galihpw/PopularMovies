@@ -194,9 +194,9 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            Log.d(TAG,s);
             if (s != null){
                 if(!s.isEmpty()){
+                    Log.d(TAG,s);
                     try {
                         JSONObject object = new JSONObject(s);
                         JSONArray results = object.getJSONArray("results");
@@ -249,9 +249,9 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            Log.d(TAG,s);
             if (s != null) {
                 if (!s.isEmpty()) {
+                    Log.d(TAG,s);
                     try {
                         JSONObject object = new JSONObject(s);
                         JSONArray results = object.getJSONArray("results");
